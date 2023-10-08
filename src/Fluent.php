@@ -8,7 +8,6 @@ use Exception;
 use ReflectionClass;
 use ReflectionException;
 use InvalidArgumentException;
-use Axm\Exception\AxmException;
 use Illuminate\Support\Collection;
 
 /**
@@ -21,7 +20,7 @@ use Illuminate\Support\Collection;
  *
  * Fluent Interface class for method chaining and control flow.
  * 
- * The FluentInterface class provides a fluent interface to facilitate method chaining and flow control 
+ * The Fluent class provides a fluent interface to facilitate method chaining and flow control 
  * in your PHP applications. and flow control in your PHP applications. You can use this class to perform a variety 
  * of operations by chaining methods in a concise and readable way. */
 
@@ -73,7 +72,7 @@ class Fluent
      * @param bool $return Whether to return the created object or $this.
      * @return $this|object
      */
-    public function new($data, bool $return = true): FluentInterface
+    public function new($data, bool $return = true): Fluent
     {
         if (!is_string($data) && !is_object($data) && !is_array($data)) {
             throw new InvalidArgumentException("Invalid argument. Expected class name, object, or array.");
@@ -112,7 +111,7 @@ class Fluent
      *
      * @param string $key   The key to add to the array.
      * @param mixed  $value The value associated with the key.
-     * @return $this        Returns the current instance of FluentInterface for method chaining.
+     * @return $this        Returns the current instance of Fluent for method chaining.
      */
     public function addValue($key, $value)
     {
@@ -125,7 +124,7 @@ class Fluent
      *
      * @param callable $callback The callback function to apply to each element.
      * @param string|null $key (Optional) The key under which you want to store the results in the buffer.
-     * @return $this The current FluentInterface object.
+     * @return $this The current Fluent object.
      */
     public function each(callable $callback, $key = null)
     {
@@ -270,7 +269,7 @@ class Fluent
      * Chain method execution with a provided closure.
      *
      * @param callable $callback The closure to call with the current object.
-     * @return $this The current instance of FluentInterface.
+     * @return $this The current instance of Fluent.
      */
     public function chain(callable $callback)
     {
@@ -298,7 +297,7 @@ class Fluent
     {
         $condition = $callback($this);
         if ($condition) {
-            throw new AxmException($exceptionMessage);
+            throw new Exception($exceptionMessage);
         }
         return $this;
     }
@@ -310,8 +309,8 @@ class Fluent
      * using reflection and provide constructor arguments.
      * @param string $className The name of the class to reflect and instantiate.
      * @param mixed ...$constructorArgs Arguments to pass to the class constructor.
-     * @return $this Returns the current instance of FluentInterface, allowing for method chaining.
-     * @throws AxmException If there is an error creating an instance of the class.
+     * @return $this Returns the current instance of Fluent, allowing for method chaining.
+     * @throws Exception If there is an error creating an instance of the class.
      */
     public function reflect($className, ...$constructorArgs)
     {
@@ -320,7 +319,7 @@ class Fluent
                 $reflection = new ReflectionClass($className);
                 $this->result['reflect'] = $reflection->newInstanceArgs($constructorArgs);
             } catch (ReflectionException $e) {
-                throw new AxmException("Error creating instance of $className: " . $e->getMessage());
+                throw new Exception("Error creating instance of $className: " . $e->getMessage());
             }
         }
 
@@ -333,7 +332,7 @@ class Fluent
      * @param callable $callback The callback to execute.
      * @param int $iterations The number of iterations.
      * @return $this
-     * @throws AxmException If an exception occurs within the callback.
+     * @throws Exception If an exception occurs within the callback.
      */
     public function loop(callable $callback, $iterations)
     {
@@ -342,7 +341,7 @@ class Fluent
                 try {
                     $this->result['loop'] = $callback($i);
                 } catch (Exception $e) {
-                    throw new AxmException("Error in loop iteration $i: " . $e->getMessage());
+                    throw new Exception("Error in loop iteration $i: " . $e->getMessage());
                 }
             }
         }
@@ -354,7 +353,7 @@ class Fluent
      * Dump the result data using the Laravel "dd" function.
      *
      * @param string|null $key The optional key to retrieve a specific result entry.
-     * @return $this The current instance of FluentInterface.
+     * @return $this The current instance of Fluent.
      */
     public function dd($key = null)
     {
@@ -368,7 +367,7 @@ class Fluent
      * Dump the result data using the Laravel "dump" function.
      *
      * @param string|null $key The optional key to retrieve a specific result entry.
-     * @return $this The current instance of FluentInterface.
+     * @return $this The current instance of Fluent.
      */
     public function dump($key = null)
     {
@@ -382,7 +381,7 @@ class Fluent
      * Echo the result data if the condition is met.
      *
      * @param mixed $value The optional value to echo. If not provided, the entire result is echoed.
-     * @return $this The current instance of FluentInterface.
+     * @return $this The current instance of Fluent.
      */
     public function write($value = null)
     {
@@ -399,7 +398,7 @@ class Fluent
     }
 
     /**
-     * addCustomMethod the FluentInterface with custom methods.
+     * addCustomMethod the Fluent with custom methods.
      *
      * @param callable $extension A closure that defines the new method.
      */
@@ -415,12 +414,12 @@ class Fluent
     }
 
     /**
-     * Reset the FluentInterface state.
+     * Reset the Fluent state.
      *
      * @param string|null $name The optional name of the result entry to reset.
      *      If provided, only that entry will be removed.
      *      If not provided, all entries are cleared, resetting the state.
-     * @return $this The current instance of FluentInterface.
+     * @return $this The current instance of Fluent.
      */
     public function reset($name = null)
     {
@@ -439,9 +438,9 @@ class Fluent
      * @param string $name The method name.
      * @param array $arguments The method arguments.
      * @return $this
-     * @throws AxmException If an exception is thrown while calling the method.
+     * @throws Exception If an exception is thrown while calling the method.
      */
-    public function __call($name, $arguments): FluentInterface
+    public function __call($name, $arguments): Fluent
     {
         if ($this->condition && !$this->isReturn) {
             $result = null;
@@ -469,11 +468,11 @@ class Fluent
                 }
             }
 
-            // Check if the method exists in the FluentInterface methods
+            // Check if the method exists in the Fluent methods
             elseif (method_exists($this, $name)) {
                 $result = call_user_func_array([$this, $name], $arguments);
             } else {
-                throw new InvalidArgumentException("El método '$name' no existe en el contexto FluentInterface.");
+                throw new InvalidArgumentException("El método '$name' no existe en el contexto Fluent.");
             }
 
             if ($result !== null) {
@@ -529,17 +528,17 @@ class Fluent
 if (!function_exists('__')) {
 
     /**
-     * Create a FluentInterface instance for method chaining.
+     * Create a Fluent instance for method chaining.
      *
-     * This function is used to create a FluentInterface instance, allowing for method chaining
+     * This function is used to create a Fluent instance, allowing for method chaining
      * on the provided object. It enhances the readability and expressiveness of code by enabling
      * a sequence of method calls on the object.
      * @param object $obj The object on which method chaining is desired.
-     * @return \Axm\FluentInterface An instance of the FluentInterface class for method chaining.
+     * @return \Axm\Fluent An instance of the Fluent class for method chaining.
      */
     function __($obj)
     {
-        // Return a new instance of the FluentInterface class for method chaining
-        return new FluentInterface($obj);
+        // Return a new instance of the Fluent class for method chaining
+        return new Fluent($obj);
     }
 }
