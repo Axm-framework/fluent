@@ -1,9 +1,8 @@
 {
-	
     "name": "axm/fluent",
 	"description": "Fluent Interface for PHP",
 	"keywords": [
-		"FluentInterface",
+		"Fluent Interface",
 		"php",
 		"framework"
 	],
@@ -25,7 +24,7 @@
 	"minimum-stability": "dev",
 	"prefer-stable": true,
 	"require": {
-        "php": "^8.0",
+        "php": "^8.1",
 		"symfony/var-dumper": "^5.0",
 		"illuminate/support": "^8.0"
 	},
