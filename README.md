@@ -1,6 +1,33 @@
+<!-- markdownlint-disable no-inline-html -->
+<p align="center">
+  <br><br>
+  <img src="art/readme_logo.png/" height="120"/>
+  <br>
+</p>
+
+<p align="center">
+	<a href="https://packagist.org/packages/axm/fluent"
+		><img
+			src="https://poser.pugx.org/axm/fluent/v/stable"
+			alt="Latest Stable Version"
+	/></a>
+	<a href="https://packagist.org/packages/axm/fluent"
+		><img
+			src="https://poser.pugx.org/axm/fluent/downloads"
+			alt="Total Downloads"
+	/></a>
+	<a href="https://packagist.org/packages/axm/fluent"
+		><img
+			src="https://poser.pugx.org/axm/fluent/license"
+			alt="License"
+	/></a>
+</p>
+<br />
+<br />
+
 # Clase FluentInterface
 
-The `FluentInterface` class is a PHP tool that provides a fluent interface for chaining methods and controlling the flow of operations concisely in PHP applications. Its main purpose is to improve code readability, allowing you to chain a series of methods coherently and easy to follow. This is the greatest potential of this interface, it is no longer necessary to repeatedly return the $this object, now `FluentInterface` handles it automatically for you.
+The `FluentInterface` class is a PHP tool that provides a fluent interface for chaining methods and controlling the flow of operations concisely in PHP fluentlications. Its main purpose is to improve code readability, allowing you to chain a series of methods coherently and easy to follow. This is the greatest potential of this interface, it is no longer necessary to repeatedly return the $this object, now `FluentInterface` handles it automatically for you.
 
 ## Method Chaining
 
@@ -217,7 +244,7 @@ __($request->input())   //input array
 ```
 
 Example 3: Dynamic Report Generation
-Imagine you are developing a report generation application that allows users to configure and customize reports according to their needs. In this situation, FluentInterface can simplify the building of dynamic reports.
+Imagine you are developing a report generation fluentlication that allows users to configure and customize reports according to their needs. In this situation, FluentInterface can simplify the building of dynamic reports.
 
 Suppose you have a ReportBuilder class that is used to build reports. You can use FluentInterface to chain methods and dynamically configure report components like headers, charts, data, and output formats.
 
@@ -251,7 +278,7 @@ Imagine you are developing a form builder platform where users can design their 
 ```
 
 Example 5: Sending Custom Emails
-Suppose you are developing an application that sends custom emails to users. FluentInterface can simplify the building of these emails.
+Suppose you are developing an fluentlication that sends custom emails to users. FluentInterface can simplify the building of these emails.
 
 ```php
 __(EmailBuilder::class)
@@ -264,7 +291,7 @@ __(EmailBuilder::class)
 ```
 
 Example 6: Generating Dynamic SQL Queries
-Suppose you are developing a web application that needs to generate dynamic SQL queries to interact with a database. You can use FluentInterface to build these queries programmatically and readably:
+Suppose you are developing a web fluentlication that needs to generate dynamic SQL queries to interact with a database. You can use FluentInterface to build these queries programmatically and readably:
 
 ```php
 $query = __(QueryBuilder::class)
@@ -278,7 +305,7 @@ $query = __(QueryBuilder::class)
 ```
 
 Example 7: Creating Interactive Charts
-Suppose you are developing a web application that displays interactive charts to users. FluentInterface can help you construct and configure these charts flexibly:
+Suppose you are developing a web fluentlication that displays interactive charts to users. FluentInterface can help you construct and configure these charts flexibly:
 
 ```php
 $chart = __(ChartBuilder::class)
