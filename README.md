@@ -1,7 +1,7 @@
 <!-- markdownlint-disable no-inline-html -->
 <p align="center">
   <br><br>
-  <img src="art/readme_logo.png/" height="120"/>
+  <img src="art/readme_logo.png/" height="150"/>
   <br>
 </p>
 
@@ -25,7 +25,15 @@
 <br />
 <br />
 
-# Clase FluentInterface
+## 📦 Installation
+
+You can also use [Composer](https://getcomposer.org/) to install Axm in your project quickly.
+
+```bash
+composer require axm/fluent
+```
+
+# Fluent Interface
 
 The `FluentInterface` class is a PHP tool that provides a fluent interface for chaining methods and controlling the flow of operations concisely in PHP fluentlications. Its main purpose is to improve code readability, allowing you to chain a series of methods coherently and easy to follow. This is the greatest potential of this interface, it is no longer necessary to repeatedly return the $this object, now `FluentInterface` handles it automatically for you.
 
