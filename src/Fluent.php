@@ -9,6 +9,7 @@ use ReflectionClass;
 use ReflectionException;
 use InvalidArgumentException;
 use Illuminate\Support\Collection;
+use RuntimeException;
 
 /**
  *  Class Fluent
@@ -22,8 +23,8 @@ use Illuminate\Support\Collection;
  * 
  * The Fluent class provides a fluent interface to facilitate method chaining and flow control 
  * in your PHP applications. and flow control in your PHP applications. You can use this class to perform a variety 
- * of operations by chaining methods in a concise and readable way. */
-
+ * of operations by chaining methods in a concise and readable way. 
+ */
 class Fluent
 {
     private $obj;
@@ -32,19 +33,15 @@ class Fluent
     private $isReturn  = false;
     private $customMethods = [];
 
+    
     /**
      * Constructor that accepts a class name or object.
      *
      * @param mixed $obj The class name or object to work with.
      * @throws InvalidArgumentException If the argument is not a valid class name or object.
      */
-    public function __construct($data)
+    public function __construct(string|object|array $data)
     {
-        // Validate that $data is a string, an object or an array
-        if (!is_string($data) && !is_object($data) && !is_array($data)) {
-            throw new InvalidArgumentException("Invalid argument. Expected class name, object, or array.");
-        }
-
         $this->createInstance($data);
     }
 
@@ -54,15 +51,15 @@ class Fluent
      * @param mixed $data The argument to be used to create the instance.
      * @return void
      */
-    private function createInstance($data)
+    private function createInstance(string|object|array $data)
     {
-        if (is_string($data) && class_exists($data)) {
-            $this->obj = new $data();
-        } elseif (is_object($data)) {
-            $this->obj = $data;
-        } elseif (is_array($data)) {
-            $this->obj = new Collection($data);
-        }
+        $this->obj = match (true) {
+            is_string($data) && class_exists($data) => new $data(),
+            is_object($data) => $data,
+            is_array($data)  => new Collection($data),
+        };
+
+        $this->result[get_class($this->obj)] = $this->obj;
     }
 
     /**
@@ -72,14 +69,11 @@ class Fluent
      * @param bool $return Whether to return the created object or $this.
      * @return $this|object
      */
-    public function new($data, bool $return = true): Fluent
+    public function new(string|object|array $data, bool $return = true): Fluent
     {
-        if (!is_string($data) && !is_object($data) && !is_array($data)) {
-            throw new InvalidArgumentException("Invalid argument. Expected class name, object, or array.");
-        }
-
         if ($this->condition && !$this->isReturn) {
             $this->createInstance($data);
+
             return $return ? $this->obj : $this;
         }
     }
@@ -101,9 +95,9 @@ class Fluent
     {
         if ($key !== null && array_key_exists($key, $this->result)) {
             return $this->result[$key];
-        } else {
-            return end($this->result);
         }
+
+        return end($this->result);
     }
 
     /**
@@ -158,7 +152,7 @@ class Fluent
             return $this->obj->$name;
         }
 
-        throw new Exception("The property '$name' does not exist on the object " . get_class($this->obj));
+        throw new InvalidArgumentException(sprintf('The property [ %s ] does not exist on the object [ %s ] .', $name, get_class($this->obj)));
     }
 
     /**
@@ -175,7 +169,7 @@ class Fluent
             return $this;
         }
 
-        throw new Exception("The property '$name' does not exist on the object " . get_class($this->obj));
+        throw new InvalidArgumentException(sprintf('The property [ %s ] does not exist on the object [ %s ] .', $name, get_class($this->obj)));
     }
 
     /**
@@ -319,7 +313,7 @@ class Fluent
                 $reflection = new ReflectionClass($className);
                 $this->result['reflect'] = $reflection->newInstanceArgs($constructorArgs);
             } catch (ReflectionException $e) {
-                throw new Exception("Error creating instance of $className: " . $e->getMessage());
+                throw new InvalidArgumentException(sprintf('Error creating instance of %s: [ %s ] .', $className, $e->getMessage()));
             }
         }
 
@@ -341,7 +335,7 @@ class Fluent
                 try {
                     $this->result['loop'] = $callback($i);
                 } catch (Exception $e) {
-                    throw new Exception("Error in loop iteration $i: " . $e->getMessage());
+                    throw new InvalidArgumentException(sprintf('Error in loop iteration %s: [ %s ] .', $i, $e->getMessage()));
                 }
             }
         }
@@ -398,8 +392,7 @@ class Fluent
     }
 
     /**
-     * addCustomMethod the Fluent with custom methods.
-     *
+     * The Fluent with custom methods.
      * @param callable $extension A closure that defines the new method.
      */
     public function addCustomMethod($method, $callback)
@@ -445,35 +438,12 @@ class Fluent
         if ($this->condition && !$this->isReturn) {
             $result = null;
 
-            // Check if the method exists in the Collection object
-            if ($this->obj instanceof Collection) {
-                if (method_exists($this->obj, $name)) {
-                    $result = call_user_func_array([$this->obj, $name], $arguments);
-                } else {
-                    throw new InvalidArgumentException("El método '$name' no existe en el contexto Collection.");
-                }
-            }
+            $result = match (true) {
+                $this->obj instanceof Collection, is_callable([$this->obj, $name]) => $this->callMethod($this->obj, $name, $arguments),
+                array_key_exists($name, $this->customMethods) => call_user_func_array($this->customMethods[$name], $arguments),
 
-            // Check if the method exists in the custom methods
-            elseif (array_key_exists($name, $this->customMethods)) {
-                $result = call_user_func_array($this->customMethods[$name], $arguments);
-            }
-
-            // Check if the method exists in the methods of the Class passed as argument
-            elseif (is_callable([$this->obj, $name])) {
-                if (method_exists($this->obj, $name)) {
-                    $result = call_user_func_array([$this->obj, $name], $arguments);
-                } else {
-                    throw new InvalidArgumentException("El método '$name' no existe en el contexto." . get_class($this->obj));
-                }
-            }
-
-            // Check if the method exists in the Fluent methods
-            elseif (method_exists($this, $name)) {
-                $result = call_user_func_array([$this, $name], $arguments);
-            } else {
-                throw new InvalidArgumentException("El método '$name' no existe en el contexto Fluent.");
-            }
+                default  => $this->callMethod($this, $name, $arguments),
+            };
 
             if ($result !== null) {
                 $this->result[$name] = $result;
@@ -481,6 +451,18 @@ class Fluent
         }
 
         return $this;
+    }
+
+    /**
+     * Method to call a method on a service
+     */
+    private function callMethod(Object $obj, string $method, $arguments)
+    {
+        if (method_exists($obj, $method)) {
+            return call_user_func_array([$obj, $method], $arguments);
+        }
+        // If the method does not exist, throw an exception
+        throw new InvalidArgumentException(sprintf('The method [ %s ] does not exist in the Collection context.', $method));
     }
 
     /**
@@ -494,8 +476,8 @@ class Fluent
         if (property_exists($this->obj, $name)) {
             return $this->obj->$name;
         }
-
-        throw new Exception("The property '$name' does not exist on the object " . get_class($this->obj));
+        // If the property does not exist, throw an exception
+        throw new RuntimeException(sprintf('The property  [ %s ] does not exist on the object [ %s ]', $name, get_class($this->obj)));
     }
 
     /**
@@ -509,8 +491,8 @@ class Fluent
         if (property_exists($this->obj, $name)) {
             return $this->obj->$name = $value;
         }
-
-        throw new Exception("The property '$name' does not exist on the object " . get_class($this->obj));
+        // If the property does not exist, throw an exception
+        throw new RuntimeException(sprintf('The property  [ %s ] does not exist on the object [ %s ]', $name, get_class($this->obj)));
     }
 
     /**
